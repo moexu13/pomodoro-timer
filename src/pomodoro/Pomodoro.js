@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import classNames from "../utils/class-names";
 import useInterval from "../utils/useInterval";
 
-import TimerSettings from "./TimerSettings";
+import DurationSettings from "./DurationSettings";
 
 const initialState = {
   focusDuration: 25,
@@ -11,9 +11,6 @@ const initialState = {
   focusMinMax: [5, 60],
   breakMinMax: [1, 15],
   isTimerRunning: false,
-  showError: false,
-  disableMinusButton: false,
-  disablePlusButton: false,
 }
 
 const playPause = () => {
@@ -26,33 +23,46 @@ class Pomodoro extends React.Component {
     super(props);
     this.state = initialState;
   }
+
   // Timer starts out paused
-  handleMinusClick = () => {
-    const focusDuration = this.state.focusDuration;
-    const focusMin = this.state.focusMinMax[0];
-    this.setState({ disablePlusButton: false });
-    if (focusDuration > focusMin) {
-      this.setState({ focusDuration: focusDuration - 1 });
-      this.setState({ showError: false });
-    } else {
-      this.setState({ duration: focusMin })
-      this.setState({ showError: true });
-      this.setState({ disableMinusButton: true});
-    }
+  handleMinusClick = (type) => {
+    if (type === "focus") {
+      const focusDuration = this.state.focusDuration;
+      const focusMin = this.state.focusMinMax[0];
+      if (focusDuration > focusMin) {
+        this.setState(prevState => { 
+          return { focusDuration: prevState.focusDuration - 1 };
+        });
+      }
+    } else if (type === "break") {
+      const breakDuration = this.state.breakDuration;
+      const breakMin = this.state.breakMinMax[0];
+      if (breakDuration > breakMin) {
+        this.setState(prevState => {
+          return { breakDuration: prevState.breakDuration - 1};
+        })
+      }
+    } 
   }
   
-  handlePlusClick = () => {
-    const focusDuration = this.state.focusDuration;
-    const focusMax = this.state.focusMinMax[1];
-    this.setState({ disableMinusButton: false });
-    if (focusDuration < focusMax) {
-      this.setState({ focusDuration: focusDuration + 1 });
-      this.setState({ showError: false });
-    } else {
-      this.setState({ duration: focusMax });
-      this.setState({ showError: true });
-      this.setState({ disablePlusButton: true });
-    }
+  handlePlusClick = (type) => {
+    if (type === "focus") {
+      const focusDuration = this.state.focusDuration;
+      const focusMax = this.state.focusMinMax[1];
+      if (focusDuration < focusMax) {
+        this.setState(prevState => {
+          return { focusDuration: prevState.focusDuration + 1 };
+        });
+      }
+    } else if (type === "break") {
+      const breakDuration = this.state.breakDuration;
+      const breakMax = this.state.breakMinMax[1];
+      if (breakDuration < breakMax) {
+        this.setState(prevState => {
+          return { breakDuration: prevState.breakDuration + 1};
+        });
+      }
+    } 
   }
   // useInterval(
   //   () => {
@@ -66,44 +76,28 @@ class Pomodoro extends React.Component {
       <div className="pomodoro">
         <div className="row">
           <div className="col">
-            <TimerSettings 
+            <DurationSettings 
               type="focus"
               duration={this.state.focusDuration}
               minMax={this.state.focusMinMax}
               handleMinusClick={this.handleMinusClick}
               handlePlusClick={this.handlePlusClick}
               showError={this.state.showError}
-              disableMinusButton={this.state.disableMinusButton}
-              disablePlusButton={this.state.disablePlusButton}
+              disableButtons={this.state.disableButtons}
             />
           </div>
           <div className="col">
             <div className="float-right">
-              <div className="input-group input-group-lg mb-2">
-                <span className="input-group-text" data-testid="duration-break">
-                  {/* TODO: Update this text to display the current break session duration */}
-                  Break Duration: 05:00
-                </span>
-                <div className="input-group-append">
-                  {/* TODO: Implement decreasing break duration and disable during a focus or break session*/}
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    data-testid="decrease-break"
-                  >
-                    <span className="oi oi-minus" />
-                  </button>
-                  {/* TODO: Implement increasing break duration and disable during a focus or break session*/}
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    data-testid="increase-break"
-                  >
-                    <span className="oi oi-plus" />
-                  </button>
-                </div>
+              <DurationSettings 
+                type="break"
+                duration={this.state.breakDuration}
+                minMax={this.state.breakMinMax}
+                handleMinusClick={this.handleMinusClick}
+                handlePlusClick={this.handlePlusClick}
+                showError={this.state.showError}
+                disableButtons={this.state.disableButtons}
+                />
               </div>
-            </div>
           </div>
         </div>
         <div className="row">
